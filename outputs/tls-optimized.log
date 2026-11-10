@@ -1,0 +1,21 @@
+tls_handshakes: label=optimized provider_dir=/home/hatch/workspace/goals/postfiat-task-node-connection/hidden_files/task-ed967cab/work/oqs-opt-mod n=30
+openssl version: OpenSSL 3.0.13 30 Jan 2024 (Library: OpenSSL 3.0.13 30 Jan 2024)
+openssl config: /home/hatch/workspace/goals/postfiat-task-node-connection/hidden_files/task-ed967cab/pack/configs/openssl-providers.cnf
+provider: -rwxrwx--- 1 root nogroup 10511000 Nov 10 18:24 /home/hatch/workspace/goals/postfiat-task-node-connection/hidden_files/task-ed967cab/work/oqs-opt-mod/oqsprovider.so
+server cert: /home/hatch/workspace/goals/postfiat-task-node-connection/hidden_files/task-ed967cab/pack/../work/certs/ecdsa-server.crt
+server cert:         Signature Algorithm: ecdsa-with-SHA256
+server cert public key algorithm:             Public Key Algorithm: id-ecPublicKey                 Public-Key: (384 bit) 
+New, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384
+trace: ClientHello total bytes=1378 (incl. 4-byte handshake header)
+trace: key_share extension length=1222 list_len=1220 group=0x11ec key_exchange_len=1216
+trace: expected X25519(32)+ML-KEM-768 ek(1184)=1216; group 0x11ec=X25519MLKEM768: OK
+Peer signing digest: SHA384
+New, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384
+Verify return code: 0 (ok)
+Reused, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384
+handshake summary full (optimized): n=30 mean=22.63 ms median=21.00 ms min=18 ms max=60 ms stdev=7.51 ms
+handshake summary full times ms: 20 18 20 20 23 24 23 60 21 19 21 19 19 20 20 20 32 22 21 22 22 21 24 20 19 22 22 21 24 20
+handshake summary resumed (optimized): n=30 mean=15.43 ms median=15.00 ms min=14 ms max=22 ms stdev=1.81 ms
+handshake summary resumed times ms: 15 15 15 14 14 14 15 17 15 16 17 22 17 16 16 14 14 15 14 14 14 15 16 14 14 20 16 15 15 15
+resumed vs full median: 15.00 ms vs 21.00 ms (71.4% of full)
+tls_handshakes: DONE label=optimized

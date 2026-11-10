@@ -1,0 +1,7 @@
+=== case3-hybrid-p384mldsa65-seclevel0 ===
+cert=/home/hatch/workspace/goals/postfiat-task-node-connection/hidden_files/task-ed967cab/pack/../work/certs/hybrid-server.crt
+openssl_conf=/home/hatch/workspace/goals/postfiat-task-node-connection/hidden_files/task-ed967cab/pack/configs/openssl-seclevel0.cnf
+openssl version: OpenSSL 3.0.13 30 Jan 2024 (Library: OpenSSL 3.0.13 30 Jan 2024)
+error setting certificate
+40D79457517C0000:error:0A0000F7:SSL routines:ssl_set_cert:unknown certificate type:../ssl/ssl_rsa.c:239:
+case3-hybrid-p384mldsa65-seclevel0: reproduced — found expected error: unknown certificate type

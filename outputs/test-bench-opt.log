@@ -1,0 +1,26 @@
+bench_liboqs: ML-KEM-768 / ML-DSA-65 throughput benchmark
+liboqs version: 0.16.0
+iterations: kem=50 sig=25
+
+[KEM] algorithm: ML-KEM-768
+[KEM] length_public_key=1184 (FIPS 203 Table 3: 1184) OK
+[KEM] length_secret_key=2400 (FIPS 203 Table 3: 2400) OK
+[KEM] length_ciphertext=1088 (FIPS 203 Table 3: 1088) OK
+[KEM] length_shared_secret=32 (FIPS 203 Table 3: 32) OK
+[KEM] shared-secret round-trip: OK (50 iterations)
+[KEM] keypair                n=50    mean=    71.83 us  min=    18.57 us  max=  2654.80 us  rate= 13921.77 ops/s
+[KEM] encaps                 n=50    mean=    20.20 us  min=    19.28 us  max=    33.76 us  rate= 49513.09 ops/s
+[KEM] decaps                 n=50    mean=    25.47 us  min=    24.47 us  max=    39.82 us  rate= 39255.37 ops/s
+[KEM] full KEM round (keypair+encaps+decaps) mean: 117.50 us
+
+[SIG] algorithm: ML-DSA-65
+[SIG] length_public_key=1952 (FIPS 204 Table 2: 1952) OK
+[SIG] length_secret_key=4032 (FIPS 204 Table 2: 4032) OK
+[SIG] length_signature=3309 (FIPS 204 Table 2: 3309) OK
+[SIG] sign/verify round-trip: OK (25 iterations, sig_len=3309)
+[SIG] keypair                n=25    mean=    62.49 us  min=    57.96 us  max=   118.10 us  rate= 16001.61 ops/s
+[SIG] sign                   n=25    mean=   204.77 us  min=    73.62 us  max=   588.72 us  rate=  4883.57 ops/s
+[SIG] verify                 n=25    mean=    62.72 us  min=    59.88 us  max=    95.89 us  rate= 15944.39 ops/s
+
+peak RSS: 6264 KiB
+bench_liboqs: DONE

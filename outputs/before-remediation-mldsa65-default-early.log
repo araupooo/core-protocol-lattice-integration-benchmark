@@ -1,0 +1,8 @@
+tls_handshakes: label=reference provider_dir=/home/hatch/workspace/goals/postfiat-task-node-connection/hidden_files/task-ed967cab/work/oqs-ref-mod n=30
+openssl version: OpenSSL 3.0.13 30 Jan 2024 (Library: OpenSSL 3.0.13 30 Jan 2024)
+provider: -rwxrwx--- 1 root nogroup 11569584 Nov 10 18:24 /home/hatch/workspace/goals/postfiat-task-node-connection/hidden_files/task-ed967cab/work/oqs-ref-mod/oqsprovider.so
+server cert:         Signature Algorithm: 2.16.840.1.101.3.4.3.18
+server cert public key algorithm:             Public Key Algorithm: 2.16.840.1.101.3.4.3.18             Unable to load Public Key 
+error setting certificate
+40F7DC7C217A0000:error:0A00018E:SSL routines:SSL_CTX_use_certificate:ca md too weak:../ssl/ssl_rsa.c:221:
+FATAL: s_server failed to start (see log)

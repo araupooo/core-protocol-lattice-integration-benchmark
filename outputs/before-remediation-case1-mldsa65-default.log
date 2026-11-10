@@ -1,0 +1,7 @@
+=== case1-mldsa65-default ===
+cert=/home/hatch/workspace/goals/postfiat-task-node-connection/hidden_files/task-ed967cab/pack/../work/certs/server.crt
+openssl_conf=/home/hatch/workspace/goals/postfiat-task-node-connection/hidden_files/task-ed967cab/pack/configs/openssl-providers.cnf
+openssl version: OpenSSL 3.0.13 30 Jan 2024 (Library: OpenSSL 3.0.13 30 Jan 2024)
+error setting certificate
+40A798CF417C0000:error:0A00018E:SSL routines:SSL_CTX_use_certificate:ca md too weak:../ssl/ssl_rsa.c:221:
+case1-mldsa65-default: reproduced — found expected error: ca md too weak
