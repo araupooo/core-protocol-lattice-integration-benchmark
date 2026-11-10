@@ -1,0 +1,37 @@
+--- a/server-config.cnf
++++ b/server-config.cnf
+@@ -1,16 +1,21 @@
+-# Deployment configuration BEFORE remediation (fails on OpenSSL 3.0.13).
+-# See docs/methodology.md, finding B-1.
++# Deployment configuration AFTER remediation (verified working).
++# See docs/methodology.md, finding B-1 and remediation R-1/R-2/R-3.
+ #
+-# Authentication: ML-DSA-65 certificate (pure post-quantum signature).
+-CERT=certs/server.crt
+-KEY=certs/server.key
+-CAFILE=certs/ca.crt
+-# Key exchange: hybrid X25519MLKEM768 (works).
++# Authentication: ECDSA P-384 certificate (classical). OpenSSL 3.0.13
++# cannot serve provider-defined signature keys (ML-DSA-65, p384_mldsa65)
++# because ssl_set_cert() only knows built-in key types; classical
++# authentication is the working option on this OpenSSL branch.
++CERT=certs/ecdsa-server.crt
++KEY=certs/ecdsa-server.key
++CAFILE=certs/ecdsa-ca.crt
++# Key exchange: hybrid X25519MLKEM768 (unchanged — the post-quantum part
++# of the handshake; ClientHello key_share 1216 bytes = X25519 32 + ML-KEM-768 ek 1184).
+ GROUPS=X25519MLKEM768
+-# Provider: oqs-provider 0.12.0 built against reference liboqs
+-# (OQS_OPT_TARGET=generic, no AVX2).
+-PROVIDER_DIR=<path-to>/oqs-ref-mod
++# Provider: oqs-provider 0.12.0 built against OPTIMIZED liboqs
++# (OQS_OPT_TARGET=auto, AVX2) — ML-KEM-768 keypair/encaps/decaps 3.8-5.7x
++# faster than the reference build at the liboqs layer (see outputs/).
++PROVIDER_DIR=<path-to>/oqs-opt-mod
+ OPENSSL_CONF=configs/openssl-providers.cnf
+-# Result: s_server exits immediately with
+-#   "error setting certificate ... ca md too weak" (default security level), or
+-#   "ssl_set_cert: unknown certificate type" (SECLEVEL=0).
++# Session tickets (TLS 1.3 resumption) stay enabled (s_server default):
++# repeat connections resume and skip the KEM + signature exchange —
++# measured resumed median 14-15 ms vs full 18-19 ms.
