@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Core-Protocol Lattice Integration Benchmark and Remediation</title>
+<style>
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; max-width: 960px; margin: 2em auto; padding: 0 1em; color: #1a1a1a; line-height: 1.5; }
+  h1 { font-size: 1.6em; } h2 { font-size: 1.25em; margin-top: 1.8em; border-bottom: 1px solid #ccc; padding-bottom: .2em; }
+  table { border-collapse: collapse; margin: 1em 0; width: 100%; }
+  th, td { border: 1px solid #bbb; padding: .4em .6em; text-align: left; font-size: .95em; }
+  th { background: #f0f0f0; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  code { background: #f4f4f4; padding: 0 .3em; border-radius: 3px; }
+  pre { background: #f4f4f4; padding: .8em; overflow-x: auto; font-size: .85em; }
+  .warn { background: #fff8e1; border-left: 4px solid #d4a017; padding: .6em .9em; margin: 1em 0; }
+  .fail { background: #fdecea; border-left: 4px solid #b3261e; padding: .6em .9em; margin: 1em 0; }
+  .ok { background: #e6f4ea; border-left: 4px solid #137333; padding: .6em .9em; margin: 1em 0; }
+  .small { font-size: .85em; color: #555; }
+</style>
+</head>
+<body>
+<h1>Core-Protocol Lattice Integration Benchmark and Remediation</h1>
+<p class="small">OpenSSL 3.0.13 + oqs-provider 0.12.0 + liboqs 0.16.0 &middot; TLS 1.3 &middot;
+Hybrid key exchange <code>X25519MLKEM768</code> (group <code>0x11ec</code>) &middot;
+ML-DSA-65 &middot; Machine: AMD EPYC 9D25, AVX2/AVX512, Ubuntu 24.04</p>
+
+<h2>What was measured</h2>
+<p>Two liboqs builds from the same pinned tarball — <strong>reference</strong>
+(<code>OQS_OPT_TARGET=generic</code>, no AVX2) and <strong>optimized</strong>
+(<code>OQS_OPT_TARGET=auto</code>, native AVX2) — each with its own
+oqs-provider 0.12.0 build, driven through the real TLS 1.3 call path
+(<code>openssl s_server</code> / <code>s_client</code>, loopback).
+Parameter sizes asserted at runtime against FIPS 203 Table 3 and FIPS 204
+Tables 1–2.</p>
+
+<h2>Benchmark results — liboqs layer (mean, n=200 KEM / n=100 SIG)</h2>
+<table>
+<tr><th>Operation</th><th class="num">Reference</th><th class="num">Optimized</th><th class="num">Speedup</th></tr>
+<tr><td>ML-KEM-768 keypair</td><td class="num">120.47 us</td><td class="num">31.33 us</td><td class="num">3.8x</td></tr>
+<tr><td>ML-KEM-768 encaps</td><td class="num">114.82 us</td><td class="num">20.18 us</td><td class="num">5.7x</td></tr>
+<tr><td>ML-KEM-768 decaps</td><td class="num">127.80 us</td><td class="num">25.61 us</td><td class="num">5.0x</td></tr>
+<tr><td>ML-KEM-768 full round</td><td class="num">363.09 us</td><td class="num">77.12 us</td><td class="num">4.7x</td></tr>
+<tr><td>ML-DSA-65 keypair</td><td class="num">424.95 us</td><td class="num">59.36 us</td><td class="num">7.2x</td></tr>
+<tr><td>ML-DSA-65 sign</td><td class="num">1159.61 us</td><td class="num">173.63 us</td><td class="num">6.7x</td></tr>
+<tr><td>ML-DSA-65 verify</td><td class="num">380.86 us</td><td class="num">60.20 us</td><td class="num">6.3x</td></tr>
+</table>
+<p>Peak RSS: reference 6272 KiB, optimized 6492 KiB. All KEM shared-secret
+round-trips and SIG sign/verify round-trips passed; all FIPS sizes matched.
+Raw logs: <code>outputs/baseline-reference.log</code>,
+<code>outputs/baseline-optimized.log</code>.</p>
+
+<h2>Benchmark results — TLS 1.3 handshakes (wall time incl. process spawn, n=30 per run)</h2>
+<table>
+<tr><th></th><th class="num">Reference run 1</th><th class="num">Reference run 2</th><th class="num">Optimized run 1</th><th class="num">Optimized run 2</th></tr>
+<tr><td>Full handshake, median</td><td class="num">18 ms</td><td class="num">18 ms</td><td class="num">21 ms</td><td class="num">19 ms</td></tr>
+<tr><td>Full handshake, mean</td><td class="num">18.80 ms</td><td class="num">18.73 ms</td><td class="num">22.63 ms</td><td class="num">18.87 ms</td></tr>
+<tr><td>Resumed handshake, median</td><td class="num">15 ms</td><td class="num">15 ms</td><td class="num">15 ms</td><td class="num">14 ms</td></tr>
+</table>
+<p>All handshakes: <code>New, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384</code>,
+<code>Verify return code: 0 (ok)</code>; every resumed run printed
+<code>Reused, TLSv1.3</code>. ClientHello key_share: group
+<code>0x11ec</code>, key_exchange_len 1216 B = X25519 (32) + ML-KEM-768 ek (1184).
+Raw logs: <code>outputs/tls-reference.log</code>,
+<code>outputs/tls-optimized.log</code> (plus <code>-run2</code> repeats).</p>
+<div class="warn"><strong>Honest scope:</strong> the optimized build shows
+<strong>no measurable handshake wall-clock improvement</strong> (18 ms vs
+19–21 ms medians, within run-to-run noise). Wall time is dominated by
+<code>s_client</code> process spawn and scheduling (~15 ms floor even for
+resumed handshakes); the crypto gap (~0.3 ms per handshake) is two orders
+of magnitude below that floor. The 4–7x benefit is proven at the
+crypto-operation layer only; a throughput benefit for in-process /
+high-throughput servers is plausible but <strong>unmeasured</strong> and is
+not claimed here.</div>
+
+<h2>Finding B-1 — ML-DSA-65 server certificates cannot be served by OpenSSL 3.0.13</h2>
+<div class="fail"><p><code>openssl s_server</code> exits immediately with an
+ML-DSA-65 (or hybrid <code>p384_mldsa65</code>) server certificate:</p>
+<pre>error setting certificate
+SSL_CTX_use_certificate: ca md too weak            (default security level)
+ssl_set_cert: unknown certificate type             (SECLEVEL=0)</pre>
+<p>Mechanism (OpenSSL 3.0.13 <code>ssl/ssl_rsa.c</code>):
+<code>SSL_CTX_use_certificate()</code> first calls
+<code>ssl_security_cert()</code>, which rejects digest-less ML-DSA signatures;
+then <code>ssl_set_cert()</code> calls
+<code>ssl_cert_lookup_by_pkey()</code>, whose table only knows built-in key
+types — provider-defined keys are not in it.</p></div>
+<p>Reproduced deterministically by
+<code>scripts/reproduce_bottleneck.sh</code> (3/3 cases):
+<code>outputs/before-remediation-case1-mldsa65-default.log</code>,
+<code>outputs/before-remediation-case2-mldsa65-seclevel0.log</code>,
+<code>outputs/before-remediation-case3-hybrid-p384mldsa65-seclevel0.log</code>.</p>
+
+<h2>Remediation</h2>
+<div class="ok"><p><strong>R-1 — Authenticate with a classical ECDSA P-384 certificate</strong>
+while keeping the hybrid <code>X25519MLKEM768</code> key exchange.
+Patch: <code>src/remediation/server-config.patch</code> (applies cleanly with
+<code>patch -p1</code>; after-state:
+<code>src/remediation/server-config.cnf</code>). After the patch all
+handshakes succeed (see TLS table above). ML-DSA-65 is still exercised at
+the liboqs API level and the X.509 level (<code>openssl verify</code> chain
+OK).</p>
+<p><strong>R-2 — Ship the optimized liboqs build</strong>
+(<code>OQS_OPT_TARGET=auto</code>): 4–7x faster at the crypto layer
+(table above).</p>
+<p><strong>R-3 — Keep TLS 1.3 session resumption enabled</strong> (default):
+resumed medians 14–15 ms vs full 18–21 ms (~17–29% faster).</p></div>
+<p>Regression tests (<code>scripts/run_tests.sh</code>): 6/6 pass —
+B-1 pinned behaviour, post-remediation handshakes, liboqs round-trips +
+FIPS sizes, optimized KEM round &lt; 50% of reference, patch round-trip,
+ML-DSA-65 chain verification. Log: <code>outputs/test-output.log</code>.</p>
+
+<h2>Limitations — disclosed</h2>
+<ul>
+<li><strong>ML-DSA-65 certificates in a live TLS server are unproven on this
+stack.</strong> Whether a newer OpenSSL branch accepts them was not tested;
+no claim is made about OpenSSL 3.2/3.4/3.5.</li>
+<li><strong>No in-process / high-throughput TLS measurement.</strong> The
+optimized build's speedup is proven at the liboqs layer only.</li>
+<li><strong>Single machine, loopback, small samples.</strong> TLS numbers are
+30+30 handshakes per build (two runs); liboqs numbers are 200/100 iterations.
+No network latency, no concurrency, no multi-client load.</li>
+<li><strong>Certificates are test-only</strong> (CN=localhost, 1–2 day
+validity, regenerated fresh per run).</li>
+<li><strong>liboqs / oqs-provider carry no FIPS 140-3 validation</strong> and
+are not recommended for production use by their projects. This is a benchmark
+and integration assessment, not a deployment recommendation.</li>
+</ul>
+
+<h2>Claim-to-evidence index</h2>
+<p>See <code>docs/evidence-index.md</code> — every specification claim cites
+its primary source (FIPS 203, FIPS 204, oqs-provider 0.12.0 release notes and
+<code>ALGORITHMS.md</code>, OpenSSL 3.0.13 source); every measurement claim
+points at its unedited log. Method: <code>docs/methodology.md</code>.
+Reproduce everything with <code>scripts/clean_reproduce.sh</code>.</p>
+</body>
+</html>
